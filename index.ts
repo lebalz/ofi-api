@@ -1,12 +1,10 @@
-import express, { Response, response } from 'express';
+import express, { Response } from 'express';
 import path from 'path';
 import cors from 'cors';
 import http from 'http';
 import morgan from 'morgan';
 import { Server, Socket } from 'socket.io';
-import { Pool, QueryConfig, QueryResult } from 'pg';
-import _, { result } from 'lodash';
-// import Routes from './api';
+import { Pool, QueryResult } from 'pg';
 import { BearerStrategy, IBearerStrategyOptionWithRequest, VerifyBearerFunction } from 'passport-azure-ad';
 import passport from 'passport';
 
@@ -47,7 +45,7 @@ const BearerVerify: VerifyBearerFunction = (token, done) => {
 const bearerStrategy = new BearerStrategy(options, BearerVerify);
 
 const app = express();
-// app.use('/api/', Routes);
+app.use(express.json({limit: '5mb'}));
 
 /**
  * CREATE A SERVER OBJECT
@@ -166,7 +164,7 @@ app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { sessio
                     if (result.rowCount > 0) {
                         res.status(200).json(result.rows[0]);
                     } else {
-                        res.status(404);
+                        res.status(200).json(undefined);
                     }
                 },
                 res
@@ -183,10 +181,14 @@ app.post('/api/document', passport.authenticate('oauth-bearer', { session: false
         getMail(req.authInfo),
         (user) => {
             query(
-                'INSERT INTO documents (user_id, web_key, data) VALUES ($1,$2,$3)',
+                'INSERT INTO documents (user_id, web_key, data) VALUES ($1,$2,$3) RETURNING *',
                 [user.id, web_key, data],
                 (result) => {
-                    res.status(201).send('ok');
+                    if (result.rowCount == 1) {
+                        res.status(201).json(result.rows[0]);
+                    } else {
+                        res.status(500).send('COULD NOT CREATE A DOCUMENT');
+                    }
                 },
                 res
             );
@@ -203,6 +205,23 @@ app.put('/api/document/:web_key', passport.authenticate('oauth-bearer', { sessio
             query(
                 'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3',
                 [data, user.id, req.params.web_key],
+                (result) => {
+                    res.status(200).send('ok');
+                },
+                res
+            );
+        },
+        res
+    );
+});
+
+app.delete('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
+    getOrCreateUserByMail(
+        getMail(req.authInfo),
+        (user) => {
+            query(
+                'DELETE FROM documents WHERE user_id=$1 and web_key=$2',
+                [user.id, req.params.web_key],
                 (result) => {
                     res.status(200).send('ok');
                 },
