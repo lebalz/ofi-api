@@ -6,8 +6,7 @@
   "author": "Balthasar Hofer",
   "scripts": {
     "start": "npx ts-node -r dotenv/config index.ts",
-    "build": "npx tsc",
-    "heroku-postbuild": "yarn install && npx ./node_modules/.bin/node-pg-migrate up"
+    "build": "npx tsc"
   },
   "keywords": [],
   "license": "MIT",
