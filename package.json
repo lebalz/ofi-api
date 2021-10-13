@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npx ts-node -r dotenv/config index.ts",
     "build": "npx tsc",
-    "heroku-postbuild": "npx ./node_modules/.bin/node-pg-migrate up"
+    "heroku-postbuild": "yarn install && npx ./node_modules/.bin/node-pg-migrate up"
   },
   "keywords": [],
   "license": "MIT",
