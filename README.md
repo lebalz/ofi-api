@@ -36,6 +36,25 @@ Add migration:
 
 ## Deploy (Dokku)
 
+### Azure
+
+Register 2 Apps:
+- ofi-api (don't set any redirect url)
+- ofi-blog (configure as SPA!)
+
+##### ofi-api configuration
+
+1. `Manage > Expose an API`: Add a scope: `access_as_user` with "Admins and users" consent + add the `Application ID URI` (e.g. `http://localhost:3001/api` for development)
+2. Add the Client Ids of the applications which can access the api (id of `ofi-blog`)
+3. `Manage > Manifest`: set the `accessTokenAcceptedVersion` from `null` to `2` (use V2 of login...)
+
+
+##### ofi-api configuration
+1. Add Redirect URIs for `Single-page application` (!! Not type `web`).
+2. Under `Manage > Authentication` Check the boxes 
+    - Access tokens (used for implicit flows)
+    - ID tokens (used for implicit and hybrid flows) 
+
 ### Configure App
 
 ```sh
@@ -53,4 +72,9 @@ dokku config:set --no-restart $APP DOKKU_LETSENCRYPT_EMAIL="foo@bar.ch"
 # deploy the app
 
 dokku letsencrypt $APP
+```
+
+```sh
+git remote add dokku dokku@<your-ip>:ofi-api
+git push dokku main:master
 ```

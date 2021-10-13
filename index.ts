@@ -67,6 +67,16 @@ app.use(morgan('combined'));
 
 passport.use(bearerStrategy);
 
+// Enable CORS (for local testing only -remove in production/deployment)
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Authorization, Origin, X-Requested-With, Content-Type, Accept'
+    );
+    next();
+});
+
 interface User {
     id: number;
     email: string;
@@ -114,16 +124,6 @@ const getOrCreateUserByMail = (mail: string, callback: (user: User) => void, req
         }
     });
 };
-
-// Enable CORS (for local testing only -remove in production/deployment)
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header(
-        'Access-Control-Allow-Headers',
-        'Authorization, Origin, X-Requested-With, Content-Type, Accept'
-    );
-    next();
-});
 
 const getMail = (authInfo?: Express.AuthInfo) => {
     if (!authInfo) {
@@ -203,10 +203,10 @@ app.put('/api/document/:web_key', passport.authenticate('oauth-bearer', { sessio
         getMail(req.authInfo),
         (user) => {
             query(
-                'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3',
+                'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3 RETURNING updated_at',
                 [data, user.id, req.params.web_key],
                 (result) => {
-                    res.status(200).send('ok');
+                    res.status(200).json({...result.rows[0], state: 'ok'});
                 },
                 res
             );
