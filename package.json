@@ -39,5 +39,8 @@
   "devDependencies": {
     "tslint-config-airbnb": "^5.11.2",
     "tslint-react": "^5.0.0"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
