@@ -88,6 +88,7 @@ interface User {
 interface DocumentPayload {
     web_key: string;
     data: JSON;
+    type: string;
 }
 
 interface Document extends DocumentPayload {
@@ -175,14 +176,14 @@ app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { sessio
 });
 
 app.post('/api/document', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
-    const { data, web_key }: DocumentPayload = req.body;
+    const { data, web_key, type }: DocumentPayload = req.body;
 
     getOrCreateUserByMail(
         getMail(req.authInfo),
         (user) => {
             query(
-                'INSERT INTO documents (user_id, web_key, data) VALUES ($1,$2,$3) RETURNING *',
-                [user.id, web_key, data],
+                'INSERT INTO documents (user_id, web_key, data, type) VALUES ($1,$2,$3,$4) RETURNING *',
+                [user.id, web_key, data, type],
                 (result) => {
                     if (result.rowCount == 1) {
                         res.status(201).json(result.rows[0]);
