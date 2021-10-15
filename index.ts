@@ -7,6 +7,7 @@ import { Server, Socket } from 'socket.io';
 import { Pool, QueryResult } from 'pg';
 import { BearerStrategy, IBearerStrategyOptionWithRequest, VerifyBearerFunction } from 'passport-azure-ad';
 import passport from 'passport';
+import compression from 'compression';
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -45,7 +46,7 @@ const BearerVerify: VerifyBearerFunction = (token, done) => {
 const bearerStrategy = new BearerStrategy(options, BearerVerify);
 
 const app = express();
-app.use(express.json({limit: '5mb'}));
+app.use(compression(), express.json({limit: '5mb'}));
 
 /**
  * CREATE A SERVER OBJECT
