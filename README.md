@@ -32,6 +32,8 @@ Add migration:
 
 - [Migrations with Node.js and PostgreSQL](https://www.maibornwolff.de/en/blog/migrations-nodejs-and-postgresql)
 
+In production, migrations are run in the `release` phase, over the [Procfile](./Procfile).
+
 ## Docs
 
 ## Deploy (Dokku)
@@ -68,6 +70,8 @@ dokku postgres:link $APP $APP
 dokku config:set $APP CLIENT_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 dokku config:set $APP TENANT_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 dokku config:set --no-restart $APP DOKKU_LETSENCRYPT_EMAIL="foo@bar.ch"
+
+dokku nginx:set $APP client-max-body-size 5mb
 
 # deploy the app
 
