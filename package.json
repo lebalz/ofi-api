@@ -5,8 +5,9 @@
   "main": "index.js",
   "author": "Balthasar Hofer",
   "scripts": {
-    "start": "npx ts-node -r dotenv/config index.ts",
-    "build": "npx tsc"
+    "start:dev": "npx ts-node -r dotenv/config index.ts",
+    "start": "node -r dotenv/config build/index.js",
+    "build": "npx tsc -p ."
   },
   "keywords": [],
   "license": "MIT",
