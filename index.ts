@@ -1,17 +1,16 @@
+import Users from './controllers/users';
+import Documents from './controllers/documents';
+import Admin from './controllers/admin';
 import express, { Response } from 'express';
 import path from 'path';
 import cors from 'cors';
 import http from 'http';
 import morgan from 'morgan';
 import { Server, Socket } from 'socket.io';
-import { Pool, QueryResult } from 'pg';
 import { BearerStrategy, IBearerStrategyOptionWithRequest, VerifyBearerFunction } from 'passport-azure-ad';
 import passport from 'passport';
 import compression from 'compression';
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-});
+import { DocumentPayload } from 'models/document';
 
 // Set the Azure AD B2C options
 const auth = {
@@ -46,7 +45,7 @@ const BearerVerify: VerifyBearerFunction = (token, done) => {
 const bearerStrategy = new BearerStrategy(options, BearerVerify);
 
 const app = express();
-app.use(compression(), express.json({limit: '5mb'}));
+app.use(compression(), express.json({ limit: '5mb' }));
 
 /**
  * CREATE A SERVER OBJECT
@@ -78,161 +77,40 @@ app.use((req, res, next) => {
     next();
 });
 
-interface User {
-    id: number;
-    email: string;
-    class?: string;
-    updated_at: string;
-    created_at: string;
-}
-
-interface DocumentPayload {
-    web_key: string;
-    data: JSON;
-    type: string;
-}
-
-interface Document extends DocumentPayload {
-    user_id: number;
-    id: number;
-    updated_at: string;
-    created_at: string;
-}
-
-const getOrCreateUserByMail = (mail: string, callback: (user: User) => void, reqRes: Response) => {
-    pool.query('SELECT * FROM users WHERE email = $1', [mail.toLowerCase()], (error, results) => {
-        if (error) {
-            console.error(error);
-            return reqRes.status(500).send(error.name);
-        }
-        if (results.rowCount == 0) {
-            pool.query(
-                'INSERT INTO users (email) VALUES ($1) RETURNING *',
-                [mail.toLowerCase()],
-                (error, res) => {
-                    if (error) {
-                        console.error(error);
-                        return reqRes.status(500).send(error.name);
-                    }
-                    if (res.rowCount == 0) {
-                        console.error(error);
-                        return reqRes.status(500).send(`NO USER "${mail}" FOUND`);
-                    }
-                    callback(res.rows[0]);
-                }
-            );
-        } else {
-            callback(results.rows[0]);
-        }
-    });
+const ErrorHandler = (res: Response, err: Error) => {
+    console.log(err);
+    res.status(500).send(err.name);
 };
-
-const getMail = (authInfo?: Express.AuthInfo) => {
-    if (!authInfo) {
-        throw 'No AuthInfo provided';
-    }
-    return (authInfo as any).preferred_username.toLowerCase();
-};
-
-const query = (sql: string, values: any[], onSuccess: (res: QueryResult<any>) => void, res: Response) => {
-    pool.query(sql, values, (error, result) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).send(error.name);
-        }
-        return onSuccess(result);
-    });
-};
-
 // Expose and protect API endpoint
-app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
-    getOrCreateUserByMail(
-        getMail(req.authInfo),
-        (user) => {
-            res.status(200).json(user);
-        },
-        res
-    );
-});
+app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), Users.current);
 
-app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
-    getOrCreateUserByMail(
-        getMail(req.authInfo),
-        (user) => {
-            query(
-                'SELECT * FROM documents WHERE user_id=$1 and web_key=$2',
-                [user.id, req.params.web_key],
-                (result) => {
-                    if (result.rowCount > 0) {
-                        res.status(200).json(result.rows[0]);
-                    } else {
-                        res.status(200).json(undefined);
-                    }
-                },
-                res
-            );
-        },
-        res
-    );
-});
+app.get(
+    '/api/admin/document/:uid/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.find
+);
 
-app.post('/api/document', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
-    const { data, web_key, type }: DocumentPayload = req.body;
+app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: false }), Admin.users);
 
-    getOrCreateUserByMail(
-        getMail(req.authInfo),
-        (user) => {
-            query(
-                'INSERT INTO documents (user_id, web_key, data, type) VALUES ($1,$2,$3,$4) RETURNING *',
-                [user.id, web_key, data, type],
-                (result) => {
-                    if (result.rowCount == 1) {
-                        res.status(201).json(result.rows[0]);
-                    } else {
-                        res.status(500).send('COULD NOT CREATE A DOCUMENT');
-                    }
-                },
-                res
-            );
-        },
-        res
-    );
-});
+app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
 
-app.put('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
-    const { data } = req.body;
-    getOrCreateUserByMail(
-        getMail(req.authInfo),
-        (user) => {
-            query(
-                'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3 RETURNING updated_at',
-                [data, user.id, req.params.web_key],
-                (result) => {
-                    res.status(200).json({...result.rows[0], state: 'ok'});
-                },
-                res
-            );
-        },
-        res
-    );
-});
+app.post<DocumentPayload>(
+    '/api/document',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Documents.create
+);
 
-app.delete('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), (req, res) => {
-    getOrCreateUserByMail(
-        getMail(req.authInfo),
-        (user) => {
-            query(
-                'DELETE FROM documents WHERE user_id=$1 and web_key=$2',
-                [user.id, req.params.web_key],
-                (result) => {
-                    res.status(200).send('ok');
-                },
-                res
-            );
-        },
-        res
-    );
-});
+app.put(
+    '/api/document/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Documents.update
+);
+
+app.delete(
+    '/api/document/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Documents.delete
+);
 
 const io = new Server(server, {});
 
