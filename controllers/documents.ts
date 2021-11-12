@@ -1,13 +1,10 @@
 import {
-    Document,
     DocumentPayload,
     find as findDocument,
     create as createDocument,
     update as updateDocument,
     remove as deleteDocument,
 } from './../models/document';
-import { QueryResult } from 'pg';
-import { db, query } from '../db';
 import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
 import { getOrCreate } from './../models/user';
@@ -15,18 +12,11 @@ import { getOrCreate } from './../models/user';
 const find: RequestHandler = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            if (!user.admin) {
-                res.status(500).send('NOT ALLOWED ACCESS');
-                return null;
-            }
-            return findDocument(req.params.uid, req.params.web_key);
+            return findDocument(user.id, req.params.web_key);
         })
         .then((document) => {
-            if (document === null) {
-                return;
-            }
             if (document) {
-                res.status(200).json(document);
+                res.status(200).send(document);
             } else {
                 res.status(200).json(undefined);
             }
@@ -37,7 +27,7 @@ const find: RequestHandler = (req, res) => {
 const create: RequestHandler<DocumentPayload> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            return createDocument(user, req.params);
+            return createDocument(user, req.body);
         })
         .then((document) => {
             if (document) {

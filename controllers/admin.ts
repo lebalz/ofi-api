@@ -6,11 +6,19 @@ import { find as findDocument } from './../models/document';
 const find: RequestHandler = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            return findDocument(user.id, req.params.web_key);
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return findDocument(req.params.uid, req.params.web_key);
         })
         .then((document) => {
+            console.log('doc', document);
+            if (document === null) {
+                return;
+            }
             if (document) {
-                res.status(200).send(document);
+                res.status(200).json(document);
             } else {
                 res.status(200).json(undefined);
             }

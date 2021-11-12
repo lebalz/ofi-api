@@ -27,6 +27,7 @@ export const find = (userId: string | number, webKey: string) => {
     );
 };
 export const create = (user: User, payload: DocumentPayload) => {
+    console.log(payload);
     const { data, web_key, type } = payload;
     return query<Document>(
         'INSERT INTO documents (user_id, web_key, data, type) VALUES ($1,$2,$3,$4) RETURNING *',

@@ -1,12 +1,10 @@
 import Users from './controllers/users';
 import Documents from './controllers/documents';
 import Admin from './controllers/admin';
-import express, { Response } from 'express';
+import express from 'express';
 import path from 'path';
 import cors from 'cors';
-import http from 'http';
 import morgan from 'morgan';
-import { Server, Socket } from 'socket.io';
 import { BearerStrategy, IBearerStrategyOptionWithRequest, VerifyBearerFunction } from 'passport-azure-ad';
 import passport from 'passport';
 import compression from 'compression';
@@ -47,11 +45,6 @@ const bearerStrategy = new BearerStrategy(options, BearerVerify);
 const app = express();
 app.use(compression(), express.json({ limit: '5mb' }));
 
-/**
- * CREATE A SERVER OBJECT
- */
-const server = http.createServer(app);
-
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
@@ -77,10 +70,6 @@ app.use((req, res, next) => {
     next();
 });
 
-const ErrorHandler = (res: Response, err: Error) => {
-    console.log(err);
-    res.status(500).send(err.name);
-};
 // Expose and protect API endpoint
 app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), Users.current);
 
@@ -112,10 +101,4 @@ app.delete(
     Documents.delete
 );
 
-const io = new Server(server, {});
-
-io.on('connection', (socket: Socket) => {
-    // ...
-});
-
-server.listen(process.env.PORT || 3001);
+export default app;
