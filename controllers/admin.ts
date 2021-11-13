@@ -37,7 +37,7 @@ const users: RequestHandler = (req, res) => {
         })
         .then((users) => {
             if (users) {
-                res.status(200).send(users);
+                res.status(200).send(users.rows);
             }
         })
         .catch((err) => ErrorHandler(res, err));
