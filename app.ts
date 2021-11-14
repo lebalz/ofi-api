@@ -70,6 +70,11 @@ app.use((req, res, next) => {
     next();
 });
 
+// Public Endpoints
+app.get('/api', (req, res) => {
+    return res.send('Welcome to the OFI-API.');
+});
+
 // Expose and protect API endpoint
 app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), Users.current);
 
