@@ -72,7 +72,7 @@ app.use((req, res, next) => {
 
 // Public Endpoints
 app.get('/api', (req, res) => {
-    return res.send('Welcome to the OFI-API.');
+    return res.status(200).send('Welcome to the OFI-API.');
 });
 
 // Expose and protect API endpoint
