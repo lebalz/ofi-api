@@ -33,7 +33,7 @@ const create: RequestHandler<DocumentPayload> = (req, res) => {
             if (document) {
                 res.status(201).json(document);
             } else {
-                res.status(500).send('COULD NOT CREATE A DOCUMENT');
+                res.status(500).send('COULD NOT CREATE');
             }
         })
         .catch((err) => ErrorHandler(res, err));
@@ -50,7 +50,7 @@ const update: RequestHandler = (req, res) => {
             if (result) {
                 res.status(200).json({ ...result, state: 'ok' });
             } else {
-                res.status(500).send('COULD NOT UPDATE THE DOCUMENT');
+                res.status(500).send('COULD NOT UPDATE');
             }
         })
         .catch((err) => ErrorHandler(res, err));

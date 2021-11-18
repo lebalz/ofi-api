@@ -1,5 +1,8 @@
 import Users from './controllers/users';
 import Documents from './controllers/documents';
+import TimedTopics from './controllers/timed_topics';
+import TimedExercises from './controllers/timed_exercises';
+import TimeSpans from './controllers/time_spans';
 import Admin from './controllers/admin';
 import express from 'express';
 import path from 'path';
@@ -84,6 +87,12 @@ app.get(
     Admin.find
 );
 
+app.get(
+    '/api/admin/timed_topics/:uid/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.findTopic
+);
+
 app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: false }), Admin.users);
 
 app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
@@ -104,6 +113,44 @@ app.delete(
     '/api/document/:web_key',
     passport.authenticate('oauth-bearer', { session: false }),
     Documents.delete
+);
+
+app.get(
+    '/api/timed_topics/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    TimedTopics.find
+);
+
+app.post('/api/timed_topics', passport.authenticate('oauth-bearer', { session: false }), TimedTopics.create);
+
+app.post(
+    '/api/timed_topics/:id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    TimedExercises.create
+);
+
+app.put(
+    '/api/timed_topics/:id/:exercise_id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    TimedExercises.update
+);
+
+app.delete(
+    '/api/timed_topics/:id/:exercise_id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    TimedExercises.delete
+);
+
+app.post(
+    '/api/timed_topics/:id/:exercise_id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    TimeSpans.create
+);
+
+app.put(
+    '/api/timed_topics/:id/:exercise_id/:span_id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    TimeSpans.stop
 );
 
 export default app;

@@ -8,6 +8,6 @@ export const getMail = (authInfo?: Express.AuthInfo) => {
 };
 
 export const ErrorHandler = (res: Response, err: Error) => {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err.name);
 };
