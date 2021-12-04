@@ -3,6 +3,7 @@ import Documents from './controllers/documents';
 import TimedTopics from './controllers/timed_topics';
 import TimedExercises from './controllers/timed_exercises';
 import TimeSpans from './controllers/time_spans';
+import SolutionPolicies from './controllers/solution_policies';
 import Admin from './controllers/admin';
 import express from 'express';
 import path from 'path';
@@ -88,6 +89,12 @@ app.get(
 );
 
 app.get(
+    '/api/admin/policy/solution/:uid/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.solutionPolicy
+);
+
+app.get(
     '/api/admin/timed_topics/:uid/:web_key',
     passport.authenticate('oauth-bearer', { session: false }),
     Admin.findTopic
@@ -151,6 +158,18 @@ app.put(
     '/api/timed_topics/:id/:exercise_id/:span_id',
     passport.authenticate('oauth-bearer', { session: false }),
     TimeSpans.stop
+);
+
+app.get(
+    '/api/policy/solutions/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    SolutionPolicies.authorized
+);
+
+app.post(
+    '/api/policy/solutions',
+    passport.authenticate('oauth-bearer', { session: false }),
+    SolutionPolicies.create
 );
 
 export default app;

@@ -37,6 +37,10 @@ export const users = () => {
     return query<User>('SELECT * FROM users', []);
 };
 
+export const find = (id: number | string) => {
+    return query<User>('SELECT * FROM users WHERE id = $1', [id]).then(extractUser);
+};
+
 export const ownsTimedTopic = (user: User, id: number) => {
     return query<{ isOwner: boolean }>(
         `
@@ -45,6 +49,7 @@ export const ownsTimedTopic = (user: User, id: number) => {
         [user.id, id]
     ).then(first);
 };
+
 export const ownsTimedExercise = (user: User, exercise_id: number) => {
     return query<{ permission: boolean }>(
         `

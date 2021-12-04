@@ -1,8 +1,9 @@
-import { getOrCreate, users as allUsers } from './../models/user';
+import { getOrCreate, users as allUsers, find as findUser } from './../models/user';
 import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
 import { find as findDocument } from './../models/document';
 import { find as fetchTopic } from './../models/TimedTopic';
+import { authorized as userAuthorized } from '../models/SolutionPolicy';
 
 const find: RequestHandler = (req, res) => {
     getOrCreate(getMail(req.authInfo))
@@ -65,5 +66,31 @@ const users: RequestHandler = (req, res) => {
         .catch((err) => ErrorHandler(res, err));
 };
 
-const Admin = { find, users, findTopic };
+const solutionPolicy: RequestHandler = (req, res) => {
+    getOrCreate(getMail(req.authInfo))
+        .then((user) => {
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return findUser(req.params.uid);
+        })
+        .then((viewed) => {
+            if (viewed) {
+                return userAuthorized(viewed, req.params.web_key);
+            }
+            if (viewed === undefined) {
+                res.status(500).send('USER NOT FOUND');
+            }
+            return viewed;
+        })
+        .then((auth) => {
+            if (auth) {
+                res.status(200).send(auth);
+            }
+        })
+        .catch((err) => ErrorHandler(res, err));
+};
+
+const Admin = { find, users, findTopic, solutionPolicy };
 export default Admin;
