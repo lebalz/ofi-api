@@ -3,7 +3,7 @@ import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
 import { find as findDocument } from './../models/document';
 import { find as fetchTopic } from './../models/TimedTopic';
-import { authorized as userAuthorized } from '../models/SolutionPolicy';
+import { authorized as userAuthorized, modify as modifyPolicy, PolicyModifier, all as allPolicies } from '../models/SolutionPolicy';
 
 const find: RequestHandler = (req, res) => {
     getOrCreate(getMail(req.authInfo))
@@ -66,7 +66,10 @@ const users: RequestHandler = (req, res) => {
         .catch((err) => ErrorHandler(res, err));
 };
 
-const solutionPolicy: RequestHandler = (req, res) => {
+const solutionPolicy: RequestHandler<{
+    uid: string,
+    web_key: string
+}> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
             if (!user.admin) {
@@ -92,5 +95,46 @@ const solutionPolicy: RequestHandler = (req, res) => {
         .catch((err) => ErrorHandler(res, err));
 };
 
-const Admin = { find, users, findTopic, solutionPolicy };
+const modifySolutionPolicy: RequestHandler<
+{web_key: string},
+any,
+PolicyModifier
+> = (req, res) => {
+    getOrCreate(getMail(req.authInfo))
+        .then((user) => {
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return modifyPolicy(req.params.web_key, req.body);
+        })
+        .then((policy) => {
+            if (policy) {
+                res.status(200).send(policy);
+            } else {
+                res.status(500).send('POLICY NOT FOUND');
+            }
+        })
+        .catch((err) => ErrorHandler(res, err));
+};
+
+const solutionPolicies: RequestHandler = (req, res) => {
+    getOrCreate(getMail(req.authInfo))
+        .then((user) => {
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return allPolicies().then((policies) => {
+                if (policies) {
+                    res.status(200).json(policies);
+                } else {
+                    res.status(500).send('ERROR');
+                    return null;
+                }
+            });
+        });
+};
+
+const Admin = { find, users, findTopic, solutionPolicy, modifySolutionPolicy, solutionPolicies };
 export default Admin;

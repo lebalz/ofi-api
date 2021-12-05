@@ -7,6 +7,7 @@ export interface User {
     email: string;
     class?: string;
     admin: boolean;
+    groups: string[];
     updated_at: string;
     created_at: string;
 }

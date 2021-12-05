@@ -95,12 +95,28 @@ app.get(
 );
 
 app.get(
+    '/api/admin/policy/solution',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.solutionPolicies
+);
+
+app.put(
+    '/api/admin/policy/solution/:web_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.modifySolutionPolicy
+);
+
+app.get(
     '/api/admin/timed_topics/:uid/:web_key',
     passport.authenticate('oauth-bearer', { session: false }),
     Admin.findTopic
 );
 
-app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: false }), Admin.users);
+app.get(
+    '/api/admin/users',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.users
+);
 
 app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
 
