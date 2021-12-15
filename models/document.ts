@@ -11,19 +11,29 @@ export interface DocumentPayload {
 export interface Document extends DocumentPayload {
     user_id: number;
     id: number;
+    versions: JSON[];
     updated_at: string;
     created_at: string;
 }
 
 const extractDocument = (result: QueryResult<Document>): Document | undefined => {
     if (result.rowCount === 1) {
+        const doc = result.rows[0];
+        doc.versions = [];
+        return doc;
+    }
+    return undefined;
+};
+const extractDocumentAndVersions = (result: QueryResult<Document>): Document | undefined => {
+    if (result.rowCount === 1) {
         return result.rows[0];
     }
     return undefined;
 };
-export const find = (userId: string | number, webKey: string) => {
+export const find = (userId: string | number, webKey: string, includeVersions: boolean = false) => {
+    const extractor = includeVersions ? extractDocumentAndVersions : extractDocument;
     return query<Document>('SELECT * FROM documents WHERE user_id=$1 and web_key=$2', [userId, webKey]).then(
-        extractDocument
+        extractor
     );
 };
 export const create = (user: User, payload: DocumentPayload) => {
@@ -34,11 +44,22 @@ export const create = (user: User, payload: DocumentPayload) => {
     ).then(extractDocument);
 };
 
-export const update = (user: User, webKey: string, data: any) => {
-    return query<{ updated_at: string }>(
-        'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3 RETURNING updated_at',
-        [data, user.id, webKey]
-    ).then((res) => {
+export const update = (
+    user: User,
+    webKey: string,
+    data: any,
+    snapshot: boolean = false,
+    pasted: boolean = false
+) => {
+    const insert = [data, user.id, webKey];
+    let sql =
+        'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3 RETURNING updated_at';
+    if (snapshot) {
+        insert.push({ version: new Date().toISOString(), data: data, pasted: pasted });
+        sql =
+            'UPDATE documents SET data=$1, updated_at=current_timestamp, versions=array_append(versions, $4) WHERE user_id=$2 and web_key=$3 RETURNING updated_at';
+    }
+    return query<{ updated_at: string }>(sql, insert).then((res) => {
         return res.rows[0];
     });
 };
