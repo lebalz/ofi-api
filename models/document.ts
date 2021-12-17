@@ -16,6 +16,12 @@ export interface Document extends DocumentPayload {
     created_at: string;
 }
 
+interface Version {
+    version: string; /** ISO Date */
+    data: JSON;
+    pasted: boolean;
+}
+
 const extractDocument = (result: QueryResult<Document>): Document | undefined => {
     if (result.rowCount === 1) {
         const doc = result.rows[0];
@@ -55,7 +61,8 @@ export const update = (
     let sql =
         'UPDATE documents SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and web_key=$3 RETURNING updated_at';
     if (snapshot) {
-        insert.push({ version: new Date().toISOString(), data: data, pasted: pasted });
+        const version: Version = { version: new Date().toISOString(), data: data, pasted: pasted };
+        insert.push(version);
         sql =
             'UPDATE documents SET data=$1, updated_at=current_timestamp, versions=array_append(versions, $4) WHERE user_id=$2 and web_key=$3 RETURNING updated_at';
     }
