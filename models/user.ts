@@ -2,12 +2,15 @@ import { first } from './helpers';
 import { QueryResult } from 'pg';
 import { query } from '../db';
 
-export interface User {
+export interface UserProps {
+    class?: string;
+    groups: string[];
+}
+
+export interface User extends UserProps {
     id: number;
     email: string;
-    class?: string;
     admin: boolean;
-    groups: string[];
     updated_at: string;
     created_at: string;
 }
@@ -40,6 +43,14 @@ export const users = () => {
 
 export const find = (id: number | string) => {
     return query<User>('SELECT * FROM users WHERE id = $1', [id]).then(extractUser);
+};
+
+export const update = (id: number | string, props: UserProps) => {
+    return query<User>('UPDATE users SET class=$2, groups=$3 WHERE id = $1 RETURNING *', [
+        id,
+        props.class,
+        props.groups,
+    ]).then(extractUser);
 };
 
 export const ownsTimedTopic = (user: User, id: number) => {

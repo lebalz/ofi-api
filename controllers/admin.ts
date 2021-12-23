@@ -1,9 +1,14 @@
-import { getOrCreate, users as allUsers, find as findUser } from './../models/user';
+import { getOrCreate, users as allUsers, find as findUser, UserProps, update } from './../models/user';
 import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
 import { find as findDocument } from './../models/document';
 import { find as fetchTopic } from './../models/TimedTopic';
-import { authorized as userAuthorized, modify as modifyPolicy, PolicyModifier, all as allPolicies } from '../models/SolutionPolicy';
+import {
+    authorized as userAuthorized,
+    modify as modifyPolicy,
+    PolicyModifier,
+    all as allPolicies,
+} from '../models/SolutionPolicy';
 
 const find: RequestHandler = (req, res) => {
     getOrCreate(getMail(req.authInfo))
@@ -66,9 +71,26 @@ const users: RequestHandler = (req, res) => {
         .catch((err) => ErrorHandler(res, err));
 };
 
+const updateUser: RequestHandler<{ uid: string }, any, { data: UserProps }> = (req, res) => {
+    getOrCreate(getMail(req.authInfo))
+        .then((user) => {
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return update(req.params.uid, req.body.data);
+        })
+        .then((user) => {
+            if (user) {
+                res.status(200).send(user);
+            }
+        })
+        .catch((err) => ErrorHandler(res, err));
+};
+
 const solutionPolicy: RequestHandler<{
-    uid: string,
-    web_key: string
+    uid: string;
+    web_key: string;
 }> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
@@ -95,11 +117,7 @@ const solutionPolicy: RequestHandler<{
         .catch((err) => ErrorHandler(res, err));
 };
 
-const modifySolutionPolicy: RequestHandler<
-{web_key: string},
-any,
-PolicyModifier
-> = (req, res) => {
+const modifySolutionPolicy: RequestHandler<{ web_key: string }, any, PolicyModifier> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
             if (!user.admin) {
@@ -119,22 +137,21 @@ PolicyModifier
 };
 
 const solutionPolicies: RequestHandler = (req, res) => {
-    getOrCreate(getMail(req.authInfo))
-        .then((user) => {
-            if (!user.admin) {
-                res.status(500).send('NOT ALLOWED ACCESS');
+    getOrCreate(getMail(req.authInfo)).then((user) => {
+        if (!user.admin) {
+            res.status(500).send('NOT ALLOWED ACCESS');
+            return null;
+        }
+        return allPolicies().then((policies) => {
+            if (policies) {
+                res.status(200).json(policies);
+            } else {
+                res.status(500).send('ERROR');
                 return null;
             }
-            return allPolicies().then((policies) => {
-                if (policies) {
-                    res.status(200).json(policies);
-                } else {
-                    res.status(500).send('ERROR');
-                    return null;
-                }
-            });
         });
+    });
 };
 
-const Admin = { find, users, findTopic, solutionPolicy, modifySolutionPolicy, solutionPolicies };
+const Admin = { find, users, findTopic, solutionPolicy, modifySolutionPolicy, solutionPolicies, updateUser };
 export default Admin;

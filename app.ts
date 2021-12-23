@@ -118,6 +118,12 @@ app.get(
     Admin.users
 );
 
+app.put(
+    '/api/admin/users/:uid',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.updateUser
+);
+
 app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
 
 app.post<DocumentPayload>(
