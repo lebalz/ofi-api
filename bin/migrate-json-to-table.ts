@@ -30,7 +30,7 @@ type ExerciseLabel = 'solved' | 'important' | 'question' | 'fail';
 
 interface TExercise {
     start: string;
-    end: string;
+    stop: string;
     name: string;
     created_at?: string;
     labels: ExerciseLabel[];
@@ -70,7 +70,7 @@ if (perform_insert) {
             console.log('tt', tt_id);
             doc.data.exercises.forEach((ex) => {
                 let start = ex.start;
-                let ende: string | null = ex.end;
+                let ende: string | null = ex.stop;
                 if (!start && !ende) {
                     start = doc.created_at;
                     ende = doc.created_at;

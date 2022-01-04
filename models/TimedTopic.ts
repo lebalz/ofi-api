@@ -64,7 +64,7 @@ export const find = (user_id: string | number, webKey: string) => {
                         json_build_object(
                             'id', ts.id,
                             'start', ts.start,
-                            'end', ts.stop
+                            'stop', ts.stop
                         )
                     ) spans
                 FROM time_spans ts

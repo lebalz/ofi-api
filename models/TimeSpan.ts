@@ -5,7 +5,7 @@ export interface TimeSpan {
     id: number;
     exercise_id: number;
     start: string;
-    end: string;
+    stop: string;
 }
 
 export const create = (exercise_id: number) => {
