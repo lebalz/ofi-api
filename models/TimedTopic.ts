@@ -70,8 +70,9 @@ export const find = (user_id: string | number, webKey: string) => {
                 FROM time_spans ts
                 GROUP BY 1
             ) ts ON te.id = ts.exercise_id
+            WHERE NOT te.deleted
             GROUP BY topic_id
-        ) te ON tt.id = te.topic_id
+        ) teAGG ON tt.id = teAGG.topic_id
         WHERE tt.user_id=$1 and tt.web_key=$2
         GROUP BY tt.id
         `,
