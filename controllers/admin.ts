@@ -10,14 +10,14 @@ import {
     all as allPolicies,
 } from '../models/SolutionPolicy';
 
-const find: RequestHandler = (req, res) => {
+const find: RequestHandler<{web_key: string, uid: number, versions?: boolean}>  = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
             if (!user.admin) {
                 res.status(500).send('NOT ALLOWED ACCESS');
                 return null;
             }
-            return findDocument(req.params.uid, req.params.web_key);
+            return findDocument(req.params.uid, req.params.web_key, req.params.versions);
         })
         .then((document) => {
             if (document === null) {

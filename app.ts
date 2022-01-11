@@ -83,7 +83,7 @@ app.get('/api', (req, res) => {
 app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), Users.current);
 
 app.get(
-    '/api/admin/document/:uid/:web_key',
+    '/api/admin/document/:uid/:web_key&:versions',
     passport.authenticate('oauth-bearer', { session: false }),
     Admin.find
 );
@@ -112,19 +112,15 @@ app.get(
     Admin.findTopic
 );
 
+app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: false }), Admin.users);
+
+app.put('/api/admin/users/:uid', passport.authenticate('oauth-bearer', { session: false }), Admin.updateUser);
+
 app.get(
-    '/api/admin/users',
+    '/api/document/:web_key&:versions',
     passport.authenticate('oauth-bearer', { session: false }),
-    Admin.users
+    Documents.find
 );
-
-app.put(
-    '/api/admin/users/:uid',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Admin.updateUser
-);
-
-app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
 
 app.post<DocumentPayload>(
     '/api/document',

@@ -1,7 +1,7 @@
 # OFI-API
 
 
-## DEvelopment
+## Development
 
 ```sh
 psql postgres
