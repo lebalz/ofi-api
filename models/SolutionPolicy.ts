@@ -89,7 +89,6 @@ export const update = (webKey: string, payload: PolicyModifier): Promise<Solutio
             if (!col) {
                 throw new Error('Invalid auth_type');
             }
-            console.log('column', payload.auth_type, col);
             const current = new Set(policy[col]);
             switch (payload.action) {
                 case 'add':
