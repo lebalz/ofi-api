@@ -5,12 +5,12 @@ import { find as findDocument } from './../models/document';
 import { find as fetchTopic } from './../models/TimedTopic';
 import {
     authorized as userAuthorized,
-    modify as modifyPolicy,
+    update as modifyPolicy,
     PolicyModifier,
     all as allPolicies,
 } from '../models/SolutionPolicy';
 
-const find: RequestHandler<{web_key: string, uid: number, versions?: boolean}>  = (req, res) => {
+const find: RequestHandler<{ web_key: string; uid: number; versions?: boolean }> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
             if (!user.admin) {
@@ -117,14 +117,17 @@ const solutionPolicy: RequestHandler<{
         .catch((err) => ErrorHandler(res, err));
 };
 
-const modifySolutionPolicy: RequestHandler<{ web_key: string }, any, PolicyModifier> = (req, res) => {
+const modifySolutionPolicy: RequestHandler<{ web_key: string }, any, { data: PolicyModifier }> = (
+    req,
+    res
+) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
             if (!user.admin) {
                 res.status(500).send('NOT ALLOWED ACCESS');
                 return null;
             }
-            return modifyPolicy(req.params.web_key, req.body);
+            return modifyPolicy(req.params.web_key, req.body.data);
         })
         .then((policy) => {
             if (policy) {

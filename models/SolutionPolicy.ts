@@ -82,10 +82,14 @@ export const create = (payload: SolutionPolicyPayload) => {
     ).then(extractPolicy);
 };
 
-export const modify = (webKey: string, payload: PolicyModifier): Promise<SolutionPolicy | undefined> => {
+export const update = (webKey: string, payload: PolicyModifier): Promise<SolutionPolicy | undefined> => {
     return find(webKey).then((policy) => {
         if (policy) {
             const col = POLICY_MAP[payload.auth_type];
+            if (!col) {
+                throw new Error('Invalid auth_type');
+            }
+            console.log('column', payload.auth_type, col);
             const current = new Set(policy[col]);
             switch (payload.action) {
                 case 'add':
@@ -99,11 +103,10 @@ export const modify = (webKey: string, payload: PolicyModifier): Promise<Solutio
                     });
                     break;
             }
-            return query<SolutionPolicy>('UPDATE solution_policies SET $1=$2 WHERE web_key=$3 RETURNING *', [
-                col,
-                [...current],
-                policy.web_key,
-            ]).then(extractPolicy);
+            return query<SolutionPolicy>(
+                `UPDATE solution_policies SET ${col}=$1 WHERE web_key=$2 RETURNING *`,
+                [[...current], policy.web_key]
+            ).then(extractPolicy);
         }
     });
 };

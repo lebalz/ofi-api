@@ -1,8 +1,8 @@
-import { SolutionPolicyPayload } from './../models/SolutionPolicy';
+import { SolutionPolicyPayload, PolicyModifier } from './../models/SolutionPolicy';
 import { ErrorHandler, getMail } from './helpers';
 import { RequestHandler } from 'express';
 import { getOrCreate } from '../models/user';
-import { authorized as userAuthorized, create as createSolutionPolicy } from '../models/SolutionPolicy';
+import { authorized as userAuthorized, create as createSolutionPolicy, update } from '../models/SolutionPolicy';
 
 const authorized: RequestHandler = (req, res) => {
     getOrCreate(getMail(req.authInfo))
