@@ -10,4 +10,8 @@ const query = <R extends QueryResultRow = any>(sql: string, values: any[]) => {
     return db.query<R>(sql, values);
 };
 
-export { db, query };
+const close = () => {
+    db.end();
+};
+
+export { db, query, close };

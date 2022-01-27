@@ -1,7 +1,10 @@
-import passport from 'passport';
 import request from 'supertest';
 import app from '../app';
-import { query } from '../db';
+import { query, close } from '../db';
+
+afterAll(() => {
+    close();
+});
 
 describe('GET /api/user authorized', () => {
     beforeEach(() => {
