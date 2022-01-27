@@ -1,5 +1,7 @@
 # OFI-API
 
+[![Build Status](https://drone.gbsl.website/api/badges/lebalz/ofi-api/status.svg)](https://drone.gbsl.website/lebalz/ofi-api)
+
 
 ## Development
 

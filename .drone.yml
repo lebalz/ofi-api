@@ -24,7 +24,7 @@ steps:
   - |
     until psql $TEST_DATABASE_URL -c "SELECT 1;"; do sleep 1; done
   # Run tests in CI mode (i.e., don't start file watcher after tests complete)
-  - CI=true yarn test
+  - CI=true yarn test --coverage
   environment:
     TEST_DATABASE_URL: postgresql://ofi_api:ofi_api@database:5432/ofi_api_test
     PGPASSWORD: ofi_api
@@ -43,6 +43,14 @@ steps:
     mount:
       - ./node_modules
 
+- name: coverage
+  image: plugins/codecov
+  settings:
+    token: $CODECOV_TOKEN
+    files:
+     - *.xml
+    paths:
+      - coverage
 volumes:
   - name: cache
     host: 
