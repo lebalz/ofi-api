@@ -15,7 +15,7 @@ psql -d postgres -U ofi_api
 
 postgres=# CREATE DATABASE ofi_api;
 postgres=# \list
-postgres=# \c api
+postgres=# \c ofi_api
 ```
 
 Using [pg-migrate](https://github.com/salsita/node-pg-migrate) for migration handling. Run Migrations:

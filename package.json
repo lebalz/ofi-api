@@ -7,10 +7,12 @@
   "scripts": {
     "start": "npx ts-node -r dotenv/config server.ts",
     "build": "npx tsc -p .",
-    "test": "jest --setupFiles dotenv/config",
+    "pretest": "NODE_ENV=test node ./node_modules/.bin/node-pg-migrate up --database-url-var=TEST_DATABASE_URL",
+    "test": "jest",
     "dumpit": "npx ts-node -r dotenv/config dumpit.ts"
   },
   "jest": {
+    "setupFiles": ["dotenv/config"],
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
       "/node_modules/"
