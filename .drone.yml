@@ -21,8 +21,7 @@ steps:
   - yarn install --frozen-lockfile
   # wait until postgres is online
   - |
-    until psql -U ofi_api -d ofi_api_test -h database \
-      -c "SELECT 1;" >/dev/null 2>&1; do sleep 1; done
+    until psql $TEST_DATABASE_URL -c "SELECT 1;" >/dev/null 2>&1; do sleep 1; done
   # Run tests in CI mode (i.e., don't start file watcher after tests complete)
   - CI=true yarn test
   environment:
