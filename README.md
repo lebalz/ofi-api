@@ -57,6 +57,26 @@ Register 2 Apps:
     - Access tokens (used for implicit flows)
     - ID tokens (used for implicit and hybrid flows) 
 
+
+## Testing
+
+## Development
+
+### Setup
+
+Create a local test database and set the env variable `TEST_DATABASE_URL` containing the db url for testing (e.g. `postgresql://ofi_api:ofi_api@localhost:5432/ofi_api_test`)
+```bash
+psql -d postgres -U ofi_api
+postgres=# CREATE DATABASE ofi_api_test;
+```
+
+Then run
+
+```bash
+yarn test
+```
+
+this will automatically setup the test db.
 ### Configure App
 
 ```sh
