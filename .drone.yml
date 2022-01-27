@@ -18,6 +18,7 @@ steps:
 - name: test
   image: node:16.11.1
   commands:
+  - apt-get update && apt-get install postgresql-client -y
   - yarn install --frozen-lockfile
   # wait until postgres is online
   - |
