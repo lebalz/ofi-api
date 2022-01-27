@@ -9,10 +9,10 @@ import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
 import { getOrCreate } from './../models/user';
 
-const find: RequestHandler<{ web_key: string; versions?: boolean }> = (req, res) => {
+const find: RequestHandler<{ web_key: string}, any, any, {versions?: boolean}> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            return findDocument(user.id, req.params.web_key, req.params.versions);
+            return findDocument(user.id, req.params.web_key, req.query.versions);
         })
         .then((document) => {
             if (document) {

@@ -4,21 +4,21 @@ import { User } from './user';
 
 export interface DocumentPayload {
     web_key: string;
-    data: JSON;
+    data: Object;
     type: string;
 }
 
 export interface Document extends DocumentPayload {
     user_id: number;
     id: number;
-    versions: JSON[];
+    versions: Version[];
     updated_at: string;
     created_at: string;
 }
 
-interface Version {
+export interface Version {
     version: string; /** ISO Date */
-    data: JSON;
+    data: Object;
     pasted: boolean;
 }
 
