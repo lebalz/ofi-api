@@ -1,7 +1,7 @@
 # OFI-API
 
 [![Build Status](https://drone.gbsl.website/api/badges/lebalz/ofi-api/status.svg)](https://drone.gbsl.website/lebalz/ofi-api)
-
+[![codecov](https://codecov.io/gh/lebalz/ofi-api/branch/main/graph/badge.svg?token=JMJIYIRISZ)](https://codecov.io/gh/lebalz/ofi-api)
 
 ## Development
 

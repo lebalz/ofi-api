@@ -46,11 +46,13 @@ steps:
 - name: coverage
   image: plugins/codecov
   settings:
-    token: $CODECOV_TOKEN
-    files:
-     - *.xml
+    required: true
+    token:
+      from_secret: codecov-token
     paths:
-      - coverage
+      - coverage/
+
+
 volumes:
   - name: cache
     host: 
