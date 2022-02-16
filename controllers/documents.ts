@@ -33,7 +33,7 @@ const create: RequestHandler<DocumentPayload> = (req, res) => {
             if (document) {
                 res.status(201).json(document);
             } else {
-                res.status(500).send('COULD NOT CREATE');
+                res.status(500).send('COULD NOT CREATE DOCUMENT');
             }
         })
         .catch((err) => ErrorHandler(res, err));
