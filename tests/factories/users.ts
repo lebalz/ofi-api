@@ -2,7 +2,7 @@ import { query } from '../../db';
 import { User, getOrCreate as getOrCreateUser } from '../../models/user';
 
 const foo: User = {
-    id: 1,
+    id: 10000, /* make sure postgres' sequence (serial id) is not using this id */
     admin: false,
     email: 'foo@bar.ch',
     groups: [],
@@ -12,7 +12,7 @@ const foo: User = {
 };
 
 const admin: User = {
-    id: 1,
+    id: 10001, /* make sure postgres' sequence (serial id) is not using this id */
     admin: false,
     email: 'admin@bar.ch',
     groups: [],
@@ -30,7 +30,7 @@ export const userProps = (props?: Partial<User>) => {
 
 export const getOrCreate = async (props?: Partial<User>) => {
     const user = userProps(props);
-    return query('DELETE FROM documents WHERE id=$1', [user.id]).then(() => {
+    return query('DELETE FROM users WHERE id=$1', [user.id]).then(() => {
         return query(
             `INSERT INTO users (id, email, admin, updated_at, created_at, class, groups)
             VALUES ($1, $2, $3, $4, $5, $6, $7)

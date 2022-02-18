@@ -3,7 +3,7 @@ import { Document, remove, create as createDoc } from '../../models/document';
 import { User } from '../../models/user';
 
 const base: Partial<Document> = {
-    id: 1,
+    id: 10000,  /* make sure postgres' sequence (serial id) is not using this id */
     user_id: 1,
     web_key: '003258dd-3641-44f1-812f-2d4febd9c096',
     versions: [],

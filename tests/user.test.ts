@@ -1,17 +1,19 @@
 import request from 'supertest';
 import app from '../app';
 import { query, close } from '../db';
+import { truncate } from './helpers/db';
+
+beforeAll(() => {
+    return truncate();
+})
 
 afterAll(() => {
-    close();
+    return close();
 });
 
 describe('GET /api/user authorized', () => {
-    beforeEach(() => {
-        return query('START TRANSACTION', []);
-    });
     afterEach(() => {
-        return query('ROLLBACK', []);
+        return truncate();
     });
     it('rejects unauthorized users', async () => {
         const result = await request(app)
