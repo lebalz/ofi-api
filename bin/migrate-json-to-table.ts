@@ -15,13 +15,11 @@ const dump = false;
 if (dump) {
     db.query('select * from documents where type=$1', ['tdoc']).then((res) => {
         const r: {}[] = [];
-        console.log(res.rowCount);
         let cnt = 0;
         res.rows.forEach((row) => {
             r.push(row);
             cnt += 1;
         });
-        console.log(r.length);
         fs.writeFileSync('tdocs.json', JSON.stringify(r, undefined, 2));
     });
 }
@@ -30,7 +28,7 @@ type ExerciseLabel = 'solved' | 'important' | 'question' | 'fail';
 
 interface TExercise {
     start: string;
-    end: string;
+    stop: string;
     name: string;
     created_at?: string;
     labels: ExerciseLabel[];
@@ -67,10 +65,9 @@ if (perform_insert) {
             [doc.user_id, doc.web_key, {}, doc.updated_at, doc.created_at]
         ).then((res) => {
             const tt_id = res.rows[0].id;
-            console.log('tt', tt_id);
             doc.data.exercises.forEach((ex) => {
                 let start = ex.start;
-                let ende: string | null = ex.end;
+                let ende: string | null = ex.stop;
                 if (!start && !ende) {
                     start = doc.created_at;
                     ende = doc.created_at;
@@ -87,7 +84,6 @@ if (perform_insert) {
                     RETURNING id`,
                     [tt_id, { labels: ex.labels }, ex.name, ende || start, ex.created_at || start]
                 ).then((res) => {
-                    console.log('ts', res.rows[0]);
                     const te_id = res.rows[0].id;
                     db.query(
                         `

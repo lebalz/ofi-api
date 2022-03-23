@@ -1,3 +1,4 @@
+import { strategyForEnvironment } from './auth/index';
 import Users from './controllers/users';
 import Documents from './controllers/documents';
 import TimedTopics from './controllers/timed_topics';
@@ -9,43 +10,9 @@ import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
-import { BearerStrategy, IBearerStrategyOptionWithRequest, VerifyBearerFunction } from 'passport-azure-ad';
 import passport from 'passport';
 import compression from 'compression';
 import { DocumentPayload } from 'models/document';
-
-// Set the Azure AD B2C options
-const auth = {
-    tenantID: process.env.TENANT_ID,
-    clientID: process.env.CLIENT_ID,
-    audience: process.env.CLIENT_ID,
-    authority: 'login.microsoftonline.com',
-    version: 'v2.0',
-    discovery: '.well-known/openid-configuration',
-    scope: ['access_as_user'],
-    validateIssuer: true,
-    passReqToCallback: false,
-    loggingLevel: 'info',
-};
-
-const options: IBearerStrategyOptionWithRequest = {
-    identityMetadata: `https://${auth.authority}/${auth.tenantID}/${auth.version}/${auth.discovery}`,
-    issuer: `https://${auth.authority}/${auth.tenantID}/${auth.version}`,
-    clientID: auth.clientID || '',
-    audience: auth.audience,
-    validateIssuer: auth.validateIssuer,
-    passReqToCallback: auth.passReqToCallback,
-    loggingLevel: auth.loggingLevel as 'info' | 'warn' | 'error' | undefined,
-    scope: auth.scope,
-};
-
-const BearerVerify: VerifyBearerFunction = (token, done) => {
-    // Send user info using the second argument
-    done(null, {}, token);
-};
-
-const bearerStrategy = new BearerStrategy(options, BearerVerify);
-
 const app = express();
 app.use(compression(), express.json({ limit: '5mb' }));
 
@@ -61,8 +28,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // show some helpful logs in the commandline
 app.use(morgan('combined'));
-
-passport.use(bearerStrategy);
+passport.use(strategyForEnvironment());
+app.use(passport.initialize());
 
 // Enable CORS (for local testing only -remove in production/deployment)
 app.use((req, res, next) => {
@@ -80,10 +47,14 @@ app.get('/api', (req, res) => {
 });
 
 // Expose and protect API endpoint
-app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), Users.current);
+app.get(
+    '/api/user',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Users.current
+);
 
 app.get(
-    '/api/admin/document/:uid/:web_key',
+    '/api/admin/document/:uid/:web_key&:versions',
     passport.authenticate('oauth-bearer', { session: false }),
     Admin.find
 );
@@ -112,19 +83,15 @@ app.get(
     Admin.findTopic
 );
 
+app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: false }), Admin.users);
+
+app.put('/api/admin/users/:uid', passport.authenticate('oauth-bearer', { session: false }), Admin.updateUser);
+
 app.get(
-    '/api/admin/users',
+    '/api/document/:web_key',
     passport.authenticate('oauth-bearer', { session: false }),
-    Admin.users
+    Documents.find
 );
-
-app.put(
-    '/api/admin/users/:uid',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Admin.updateUser
-);
-
-app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
 
 app.post<DocumentPayload>(
     '/api/document',

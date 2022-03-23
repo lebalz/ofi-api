@@ -1,0 +1,71 @@
+---
+kind: pipeline
+type: docker
+name: run_tests
+
+steps:
+- name: restore-cache
+  image: drillster/drone-volume-cache
+  volumes:
+  - name: cache
+    path: /cache
+  settings:
+    restore: true
+    mount:
+      - ./node_modules
+
+# Run tests against React client app (with Jest)
+- name: test
+  image: node:16.11.1
+  commands:
+  - apt-get update && apt-get install postgresql-client -y
+  - yarn install --frozen-lockfile
+  # wait until postgres is online
+  - |
+    until psql $TEST_DATABASE_URL -c "SELECT 1;"; do sleep 1; done
+  # Run tests in CI mode (i.e., don't start file watcher after tests complete)
+  - CI=true yarn test --coverage
+  environment:
+    TEST_DATABASE_URL: postgresql://ofi_api:ofi_api@database:5432/ofi_api_test
+    PGPASSWORD: ofi_api
+  volumes:
+    # Link node_modules cache from host filesystem into container at the expected location
+    - name: node_cache
+      path: /drone/src/services/client/node_modules
+
+- name: rebuild-cache
+  image: drillster/drone-volume-cache
+  volumes:
+  - name: cache
+    path: /cache
+  settings:
+    rebuild: true
+    mount:
+      - ./node_modules
+
+- name: coverage
+  image: plugins/codecov
+  settings:
+    required: true
+    token:
+      from_secret: codecov-token
+    paths:
+      - coverage/
+
+
+volumes:
+  - name: cache
+    host: 
+      path: /var/lib/dokku/data/storage/hfr-drone-runner/cache
+
+services:
+  # This database stays running during the whole pipeline and can be accessed from any of the
+  # other steps.
+  - name: database
+    image: postgres:11.1-alpine
+    ports:
+    - 5432
+    environment:
+      POSTGRES_USER: ofi_api
+      POSTGRES_PASSWORD: ofi_api
+      POSTGRES_DB: ofi_api_test

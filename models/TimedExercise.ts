@@ -39,5 +39,11 @@ export const update = (id: number, data: TimedExercisePayload) => {
 };
 
 export const destroy = (id: number) => {
-    return query('DELETE FROM timed_exercises CASCADE WHERE id=$1', [id]);
+    return query(
+        `UPDATE timed_exercises
+        SET deleted=true, updated_at=current_timestamp
+        WHERE id=$1`,
+        [id]
+    );
+    // return query('DELETE FROM timed_exercises CASCADE WHERE id=$1', [id]);
 };
