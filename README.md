@@ -4,7 +4,7 @@
 ## DEvelopment
 
 ```sh
-psql postgres
+psql postgres # sudo -u postgres psql
 
 postgres=# CREATE ROLE ofi_api WITH LOGIN PASSWORD 'ofi_api';
 postgres=# ALTER ROLE ofi_api CREATEDB;
@@ -15,7 +15,7 @@ psql -d postgres -U ofi_api
 
 postgres=# CREATE DATABASE ofi_api;
 postgres=# \list
-postgres=# \c api
+postgres=# \c ofi_api
 ```
 
 Using [pg-migrate](https://github.com/salsita/node-pg-migrate) for migration handling. Run Migrations:
