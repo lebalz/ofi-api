@@ -1,3 +1,4 @@
+import { QueryResult } from 'pg';
 import { query } from '../../db';
 import { User, getOrCreate as getOrCreateUser } from '../../models/user';
 import { sequence } from '../helpers/sequence';
@@ -31,7 +32,7 @@ export const userProps = (props?: Partial<User>) => {
     return { ...foo(), ...props };
 };
 
-export const getOrCreate = async (props?: Partial<User>) => {
+export const getOrCreate = async (props?: Partial<User>): Promise<QueryResult<any>> => {
     const user = userProps(props);
     return query('DELETE FROM users WHERE id=$1', [user.id]).then(() => {
         return query(
