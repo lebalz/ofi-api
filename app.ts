@@ -54,6 +54,12 @@ app.get(
 );
 
 app.get(
+    '/api/user/data',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Users.data
+);
+
+app.get(
     '/api/admin/document/:uid/:web_key&:versions',
     passport.authenticate('oauth-bearer', { session: false }),
     Admin.find

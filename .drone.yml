@@ -16,7 +16,7 @@ steps:
 
 # Run tests against React client app (with Jest)
 - name: test
-  image: node:16.11.1
+  image: node:18
   commands:
   - apt-get update && apt-get install postgresql-client -y
   - yarn install --frozen-lockfile

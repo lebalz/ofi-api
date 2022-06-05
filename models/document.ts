@@ -17,7 +17,7 @@ export interface Document extends DocumentPayload {
 }
 
 export interface Version {
-    version: string; /** ISO Date */
+    version: string /** ISO Date */;
     data: Object;
     pasted: boolean;
 }
@@ -30,18 +30,21 @@ const extractDocument = (result: QueryResult<Document>): Document | undefined =>
     }
     return undefined;
 };
+
 const extractDocumentAndVersions = (result: QueryResult<Document>): Document | undefined => {
     if (result.rowCount === 1) {
         return result.rows[0];
     }
     return undefined;
 };
+
 export const find = (userId: string | number, webKey: string, includeVersions: boolean = false) => {
     const extractor = includeVersions ? extractDocumentAndVersions : extractDocument;
     return query<Document>('SELECT * FROM documents WHERE user_id=$1 and web_key=$2', [userId, webKey]).then(
         extractor
     );
 };
+
 export const create = (user: User, payload: DocumentPayload) => {
     const { data, web_key, type } = payload;
     return query<Document>(
@@ -73,4 +76,10 @@ export const update = (
 
 export const remove = (user: User, webKey: string) => {
     return query('DELETE FROM documents WHERE user_id=$1 and web_key=$2', [user.id, webKey]);
+};
+
+export const all = (user: User): Promise<Document[]> => {
+    return query<Document>('SELECT * FROM documents WHERE user_id=$1', [user.id]).then((res) => {
+        return res.rows;
+    });
 };

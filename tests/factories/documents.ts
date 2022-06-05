@@ -1,23 +1,26 @@
 import { query } from '../../db';
 import { Document, remove, create as createDoc } from '../../models/document';
 import { User } from '../../models/user';
+import { sequence } from '../helpers/sequence';
 
-const base: Partial<Document> = {
-    id: 10000,  /* make sure postgres' sequence (serial id) is not using this id */
-    user_id: 1,
-    web_key: '003258dd-3641-44f1-812f-2d4febd9c096',
-    versions: [],
-    created_at: '2022-01-02',
-    updated_at: '2022-01-04',
-};
-const text: Document = {
-    ...(base as Document),
+const docSequence = sequence();
+
+const base: () => Partial<Document> = () => ({
+    id: docSequence(),  /* make sure postgres' sequence (serial id) is not using this id */
+        user_id: 1,
+        web_key: '003258dd-3641-44f1-812f-2d4febd9c096',
+        versions: [],
+        created_at: '2022-01-02',
+        updated_at: '2022-01-04',
+    });
+const text: () => Document = () => ({
+    ...(base() as Document),
     type: 'text',
     data: { type: 'text', value: '<b></b>' },
-};
+});
 
 export const docProps = (props?: Partial<Document>) => {
-    return { ...text, ...props };
+    return { ...text(), ...props };
 };
 
 export const create = async (props?: Partial<Document>) => {

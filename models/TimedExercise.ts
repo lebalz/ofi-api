@@ -1,8 +1,13 @@
 import { query } from '../db';
 import { first } from './helpers';
 import { TimeSpan } from './TimeSpan';
+
+interface  Data {
+    labels: ('solved' | 'important' | 'question' | 'fail')[];
+    text?: string;
+}
 export interface TimedExercisePayload {
-    data: JSON;
+    data: Data;
     name: string;
 }
 

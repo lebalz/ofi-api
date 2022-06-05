@@ -5,7 +5,7 @@ import { User } from './user';
 
 export interface TimedTopicPayload {
     web_key: string;
-    data: JSON;
+    data: Object;
 }
 
 export interface TimedTopicRecord extends TimedTopicPayload {
@@ -19,65 +19,67 @@ export interface TimedTopic extends TimedTopicRecord {
     exercises: TimedExercise[];
 }
 
-const extractAggTopic = (result: QueryResult<{topic: TimedTopicRecord[]}>): TimedTopicRecord | undefined => {
-    if (result.rowCount === 1 && result.rows[0].topic && result.rows[0].topic[0]) {
-            return result.rows[0].topic[0];
-        }
-        return undefined;
-    };
-const extractTopic = (result: QueryResult<TimedTopicRecord>): TimedTopicRecord | undefined => {
-    if (result.rowCount === 1) {
-            return result.rows[0];
-        }
-        return undefined;
-    };
-
-export const find = (user_id: string | number, webKey: string) => {
-    return query<{topic: TimedTopic[]}>(
-        `SELECT
-        json_agg(json_build_object(
-                'id', tt.id,
-                'user_id', tt.user_id,
-                'web_key', tt.web_key,
-                'data', tt.data,
-                'updated_at', tt.updated_at,
-                'created_at', tt.created_at,
-                'exercises', coalesce(exercises, '[]'::JSON)
-            )) topic
-        FROM timed_topics tt
-        LEFT JOIN (
-            SELECT topic_id,
-                json_agg(
-                    json_build_object(
-                        'id', te.id,
-                        'data', te.data,
-                        'name', te.name,
-                        'updated_at', te.updated_at,
-                        'created_at', te.created_at,
-                        'time_spans', coalesce(spans, '[]'::JSON)
-                    )
-                ) exercises
-            FROM timed_exercises te
+const TIMED_TOPIC_QUERY = (all?: boolean) => {
+    return `SELECT
+            json_agg(json_build_object(
+                    'id', tt.id,
+                    'user_id', tt.user_id,
+                    'web_key', tt.web_key,
+                    'data', tt.data,
+                    'updated_at', tt.updated_at,
+                    'created_at', tt.created_at,
+                    'exercises', coalesce(exercises, '[]'::JSON)
+                )) topic
+            FROM timed_topics tt
             LEFT JOIN (
-                SELECT exercise_id,
+                SELECT topic_id,
                     json_agg(
                         json_build_object(
-                            'id', ts.id,
-                            'start', ts.start,
-                            'stop', ts.stop
+                            'id', te.id,
+                            'data', te.data,
+                            'name', te.name,
+                            'updated_at', te.updated_at,
+                            'created_at', te.created_at,
+                            'time_spans', coalesce(spans, '[]'::JSON)
                         )
-                    ) spans
-                FROM time_spans ts
-                GROUP BY 1
-            ) ts ON te.id = ts.exercise_id
-            WHERE NOT te.deleted
-            GROUP BY topic_id
-        ) teAGG ON tt.id = teAGG.topic_id
-        WHERE tt.user_id=$1 and tt.web_key=$2
-        GROUP BY tt.id
-        `,
-        [user_id, webKey]
-    ).then((res) => {
+                    ) exercises
+                FROM timed_exercises te
+                LEFT JOIN (
+                    SELECT exercise_id,
+                        json_agg(
+                            json_build_object(
+                                'id', ts.id,
+                                'start', ts.start,
+                                'stop', ts.stop
+                            )
+                        ) spans
+                    FROM time_spans ts
+                    GROUP BY 1
+                ) ts ON te.id = ts.exercise_id
+                WHERE NOT te.deleted
+                GROUP BY topic_id
+            ) teAGG ON tt.id = teAGG.topic_id
+            WHERE tt.user_id=$1 ${all ? '' : 'and tt.web_key=$2'}
+            GROUP BY tt.id`;
+};
+
+const extractAggTopic = (
+    result: QueryResult<{ topic: TimedTopicRecord[] }>
+): TimedTopicRecord | undefined => {
+    if (result.rowCount === 1 && result.rows[0].topic && result.rows[0].topic[0]) {
+        return result.rows[0].topic[0];
+    }
+    return undefined;
+};
+const extractTopic = (result: QueryResult<TimedTopicRecord>): TimedTopicRecord | undefined => {
+    if (result.rowCount === 1) {
+        return result.rows[0];
+    }
+    return undefined;
+};
+
+export const find = (user_id: string | number, webKey: string) => {
+    return query<{ topic: TimedTopic[] }>(TIMED_TOPIC_QUERY(false), [user_id, webKey]).then((res) => {
         return extractAggTopic(res);
     });
 };
@@ -96,5 +98,11 @@ export const update = (user: User, webKey: string, data: any) => {
         [data, user.id, webKey]
     ).then((res) => {
         return res.rows[0];
+    });
+};
+
+export const all = (user: User): Promise<TimedTopic[]> => {
+    return query<{ topic: TimedTopic[] }>(TIMED_TOPIC_QUERY(true), [user.id]).then((res) => {
+        return res.rows.map((row) => row.topic[0]);
     });
 };
