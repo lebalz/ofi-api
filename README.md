@@ -69,7 +69,7 @@ Register 2 Apps:
 Create a local test database and set the env variable `TEST_DATABASE_URL` containing the db url for testing (e.g. `postgresql://ofi_api:ofi_api@localhost:5432/ofi_api_test`)
 ```bash
 psql -d postgres -U ofi_api
-postgres=# CREATE DATABASE ofi_api_test;
+postgres=# CREATE DATABASE db_sql_development;
 ```
 
 Then run
@@ -79,6 +79,18 @@ yarn test
 ```
 
 this will automatically setup the test db.
+
+#### Troubleshooting
+- db was not erased:
+  - recreate the db:
+
+```bash
+psql -d postgres -U ofi_api
+\l # show all db's
+drop database db_sql_development;
+CREATE DATABASE db_sql_development;
+```
+
 ### Configure App
 
 ```sh

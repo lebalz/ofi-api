@@ -1,6 +1,8 @@
+import { CommentPayload } from './models/comment';
 import { strategyForEnvironment } from './auth/index';
 import Users from './controllers/users';
 import Documents from './controllers/documents';
+import Comments from './controllers/comments';
 import TimedTopics from './controllers/timed_topics';
 import TimedExercises from './controllers/timed_exercises';
 import TimeSpans from './controllers/time_spans';
@@ -115,6 +117,31 @@ app.delete(
     '/api/document/:web_key',
     passport.authenticate('oauth-bearer', { session: false }),
     Documents.delete
+);
+
+
+app.get(
+    '/api/comment/:page_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Comments.allByPage
+);
+
+app.post<CommentPayload>(
+    '/api/comment',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Comments.create
+);
+
+app.put(
+    '/api/comment/:id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Comments.update
+);
+
+app.delete(
+    '/api/comment/:id',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Comments.delete
 );
 
 app.get(

@@ -2,6 +2,7 @@ import { query } from '../../db';
 
 export const truncate = () => {
     const deletions = [
+        'comments',
         'documents',
         'solution_policies',
         'time_spans',

@@ -1,22 +1,22 @@
 import {
-    DocumentPayload,
-    find as findDocument,
-    create as createDocument,
-    update as updateDocument,
-    remove as deleteDocument
-} from './../models/document';
+    CommentPayload,
+    findAllByPage as findAllByPage,
+    create as createComment,
+    update as updateComment,
+    remove as deleteComment
+} from './../models/comment';
 import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
 import { getOrCreate } from './../models/user';
 
-const find: RequestHandler<{ web_key: string}, any, any, {versions?: boolean}> = (req, res) => {
+const allByPage: RequestHandler<{ page_key: string}> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            return findDocument(user.id, req.params.web_key, req.query.versions);
+            return findAllByPage(user.id, req.params.page_key);
         })
-        .then((document) => {
-            if (document) {
-                res.status(200).send(document);
+        .then((comments) => {
+            if (comments) {
+                res.status(200).send(comments);
             } else {
                 res.status(200).json(undefined);
             }
@@ -24,10 +24,10 @@ const find: RequestHandler<{ web_key: string}, any, any, {versions?: boolean}> =
         .catch((err) => ErrorHandler(res, err));
 };
 
-const create: RequestHandler<DocumentPayload> = (req, res) => {
+const create: RequestHandler<CommentPayload> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            return createDocument(user, req.body);
+            return createComment(user, req.body);
         })
         .then((document) => {
             if (document) {
@@ -39,12 +39,12 @@ const create: RequestHandler<DocumentPayload> = (req, res) => {
         .catch((err) => ErrorHandler(res, err));
 };
 
-const update: RequestHandler<{ web_key: string }, any, { data: any; snapshot?: boolean; pasted?: boolean }> =
+const update: RequestHandler<{ id: number }, any, { data: any; locator?: any }> =
     (req, res) => {
-        const { data, snapshot, pasted } = req.body;
+        const { data, locator } = req.body;
         getOrCreate(getMail(req.authInfo))
             .then((user) => {
-                return updateDocument(user, req.params.web_key, data, snapshot, pasted);
+                return updateComment(user, req.params.id, data, locator);
             })
             .then((result) => {
                 if (result) {
@@ -56,10 +56,10 @@ const update: RequestHandler<{ web_key: string }, any, { data: any; snapshot?: b
             .catch((err) => ErrorHandler(res, err));
     };
 
-const remove: RequestHandler = (req, res) => {
+const remove: RequestHandler<{ id: number }> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
         .then((user) => {
-            return deleteDocument(user, req.params.web_key);
+            return deleteComment(user, req.params.id);
         })
         .then(() => {
             res.status(200).send('ok');
@@ -67,5 +67,5 @@ const remove: RequestHandler = (req, res) => {
         .catch((err) => ErrorHandler(res, err));
 };
 
-const Documents = { find, create, update, delete: remove};
-export default Documents;
+const Comments = { allByPage, create, update, delete: remove};
+export default Comments;
