@@ -91,6 +91,12 @@ app.get(
     Admin.findTopic
 );
 
+app.get(
+    '/api/admin/comments/:uid/:page_key',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.findComments
+);
+
 app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: false }), Admin.users);
 
 app.put('/api/admin/users/:uid', passport.authenticate('oauth-bearer', { session: false }), Admin.updateUser);

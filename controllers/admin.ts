@@ -9,6 +9,7 @@ import {
     PolicyModifier,
     all as allPolicies,
 } from '../models/SolutionPolicy';
+import { findAllByPage } from '../models/comment';
 
 const find: RequestHandler<{ web_key: string; uid: number; versions?: boolean }> = (req, res) => {
     getOrCreate(getMail(req.authInfo))
@@ -25,6 +26,28 @@ const find: RequestHandler<{ web_key: string; uid: number; versions?: boolean }>
             }
             if (document) {
                 res.status(200).json(document);
+            } else {
+                res.status(200).json(undefined);
+            }
+        })
+        .catch((err) => ErrorHandler(res, err));
+};
+
+const findComments: RequestHandler<{ page_key: string; uid: number }> = (req, res) => {
+    getOrCreate(getMail(req.authInfo))
+        .then((user) => {
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return findAllByPage(req.params.uid, req.params.page_key);
+        })
+        .then((comments) => {
+            if (comments === null) {
+                return;
+            }
+            if (comments) {
+                res.status(200).json(comments);
             } else {
                 res.status(200).json(undefined);
             }
@@ -156,5 +179,5 @@ const solutionPolicies: RequestHandler = (req, res) => {
     });
 };
 
-const Admin = { find, users, findTopic, solutionPolicy, modifySolutionPolicy, solutionPolicies, updateUser };
+const Admin = { find, users, findTopic, solutionPolicy, modifySolutionPolicy, solutionPolicies, updateUser, findComments };
 export default Admin;
