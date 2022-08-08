@@ -49,17 +49,9 @@ app.get('/api', (req, res) => {
 });
 
 // Expose and protect API endpoint
-app.get(
-    '/api/user',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Users.current
-);
+app.get('/api/user', passport.authenticate('oauth-bearer', { session: false }), Users.current);
 
-app.get(
-    '/api/user/data',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Users.data
-);
+app.get('/api/user/data', passport.authenticate('oauth-bearer', { session: false }), Users.data);
 
 app.get(
     '/api/admin/document/:uid/:web_key&:versions',
@@ -101,11 +93,7 @@ app.get('/api/admin/users', passport.authenticate('oauth-bearer', { session: fal
 
 app.put('/api/admin/users/:uid', passport.authenticate('oauth-bearer', { session: false }), Admin.updateUser);
 
-app.get(
-    '/api/document/:web_key',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Documents.find
-);
+app.get('/api/document/:web_key', passport.authenticate('oauth-bearer', { session: false }), Documents.find);
 
 app.post<DocumentPayload>(
     '/api/document',
@@ -125,7 +113,6 @@ app.delete(
     Documents.delete
 );
 
-
 app.get(
     '/api/comment/:page_key',
     passport.authenticate('oauth-bearer', { session: false }),
@@ -138,17 +125,9 @@ app.post<CommentPayload>(
     Comments.create
 );
 
-app.put(
-    '/api/comment/:id',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Comments.update
-);
+app.put('/api/comment/:id', passport.authenticate('oauth-bearer', { session: false }), Comments.update);
 
-app.delete(
-    '/api/comment/:id',
-    passport.authenticate('oauth-bearer', { session: false }),
-    Comments.delete
-);
+app.delete('/api/comment/:id', passport.authenticate('oauth-bearer', { session: false }), Comments.delete);
 
 app.get(
     '/api/timed_topics/:web_key',

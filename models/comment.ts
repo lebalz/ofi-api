@@ -25,9 +25,11 @@ const extractComment = (result: QueryResult<Comment>): Comment | undefined => {
 };
 
 export const findAllByPage = (userId: string | number, pageKey: string) => {
-    return query<Comment>('SELECT * FROM comments WHERE user_id=$1 and page_key=$2', [userId, pageKey]).then((res) => {
-        return res.rows;
-    })
+    return query<Comment>('SELECT * FROM comments WHERE user_id=$1 and page_key=$2', [userId, pageKey]).then(
+        (res) => {
+            return res.rows;
+        }
+    );
 };
 
 export const create = (user: User, payload: CommentPayload) => {
@@ -41,21 +43,19 @@ export const create = (user: User, payload: CommentPayload) => {
     ).then(extractComment);
 };
 
-export const update = (
-    user: User,
-    id: string | number,
-    data: any,
-    locator?: any
-) => {
+export const update = (user: User, id: string | number, data: any, locator?: any) => {
     if (locator) {
         return query<{ updated_at: string }>(
-            'UPDATE comments SET data=$1, locator=$4, updated_at=current_timestamp WHERE user_id=$2 and id=$3 RETURNING updated_at', [data, user.id, id, locator]).then((res) => {
+            'UPDATE comments SET data=$1, locator=$4, updated_at=current_timestamp WHERE user_id=$2 and id=$3 RETURNING updated_at',
+            [data, user.id, id, locator]
+        ).then((res) => {
             return res.rows[0];
         });
-    
     }
     return query<{ updated_at: string }>(
-        'UPDATE comments SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and id=$3 RETURNING updated_at', [data, user.id, id]).then((res) => {
+        'UPDATE comments SET data=$1, updated_at=current_timestamp WHERE user_id=$2 and id=$3 RETURNING updated_at',
+        [data, user.id, id]
+    ).then((res) => {
         return res.rows[0];
     });
 };
