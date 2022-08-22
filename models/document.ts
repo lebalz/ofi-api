@@ -45,6 +45,18 @@ export const find = (userId: string | number, webKey: string, includeVersions: b
     );
 };
 
+export const findAllBy = (webKeys: string[], klasse: string) => {
+    return query<Document>(`SELECT documents.*
+    FROM documents join users on documents.user_id = users.id
+    WHERE users.class = $1 and documents.web_key = ANY ($2::text[])`, [klasse, webKeys]).then((res) => {
+        return res.rows.map((r) => {
+            r.versions = [];
+            return r;
+        });
+    }
+    );
+};
+
 export const create = (user: User, payload: DocumentPayload) => {
     const { data, web_key, type } = payload;
     return query<Document>(

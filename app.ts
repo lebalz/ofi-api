@@ -59,6 +59,13 @@ app.get(
     Admin.find
 );
 
+// --- todo here!
+app.get(
+    '/api/admin/document/find_all_by',
+    passport.authenticate('oauth-bearer', { session: false }),
+    Admin.findAllBy
+);
+
 app.get(
     '/api/admin/policy/solution/:uid/:web_key',
     passport.authenticate('oauth-bearer', { session: false }),

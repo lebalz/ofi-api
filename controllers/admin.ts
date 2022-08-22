@@ -1,7 +1,7 @@
 import { getOrCreate, users as allUsers, find as findUser, UserProps, update } from './../models/user';
 import { RequestHandler } from 'express';
 import { getMail, ErrorHandler } from './helpers';
-import { find as findDocument } from './../models/document';
+import { find as findDocument, findAllBy as findAllDocumentsBy } from './../models/document';
 import { find as fetchTopic } from './../models/TimedTopic';
 import {
     authorized as userAuthorized,
@@ -26,6 +26,32 @@ const find: RequestHandler<{ web_key: string; uid: number; versions?: boolean }>
             }
             if (document) {
                 res.status(200).json(document);
+            } else {
+                res.status(200).json(undefined);
+            }
+        })
+        .catch((err) => ErrorHandler(res, err));
+};
+
+const findAllBy: RequestHandler<{}, {}, {}, {klasse: string, web_keys: string[]}> = (req, res) => {
+    if (!Array.isArray(req.query.web_keys)) {
+        req.query.web_keys = [req.query.web_keys];
+    }
+    // return res.json(req.query);
+    getOrCreate(getMail(req.authInfo))
+        .then((user) => {
+            if (!user.admin) {
+                res.status(500).send('NOT ALLOWED ACCESS');
+                return null;
+            }
+            return findAllDocumentsBy(req.query.web_keys, req.query.klasse);
+        })
+        .then((documents) => {
+            if (documents === null) {
+                return;
+            }
+            if (documents) {
+                res.status(200).json(documents);
             } else {
                 res.status(200).json(undefined);
             }
@@ -179,5 +205,15 @@ const solutionPolicies: RequestHandler = (req, res) => {
     });
 };
 
-const Admin = { find, users, findTopic, solutionPolicy, modifySolutionPolicy, solutionPolicies, updateUser, findComments };
+const Admin = {
+    find,
+    users,
+    findTopic,
+    solutionPolicy,
+    modifySolutionPolicy,
+    solutionPolicies,
+    updateUser,
+    findComments,
+    findAllBy,
+};
 export default Admin;
