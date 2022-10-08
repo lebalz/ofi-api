@@ -53,13 +53,13 @@ describe('GET /api/user/data', () => {
         expect(result.body.timed_topics).toEqual([]);
 
         // add some documents
-        createDoc({
+        await createDoc({
             user_id: user.id,
             type: 'text',
             web_key: 'fe21324d-b80d-48c0-8ee2-0d98af0e72f8',
             data: { type: 'text', value: 'hello' },
         });
-        createDoc({
+        await createDoc({
             user_id: user.id,
             type: 'code',
             web_key: '1e928a26-71ea-45f2-98cb-f9fda6ca3665',
