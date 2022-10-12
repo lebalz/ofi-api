@@ -52,6 +52,11 @@ steps:
     paths:
       - coverage/
 
+- name: notify
+  image: plugins/webhook
+  settings:
+    urls:
+      from_secret: NODE_RED_WEBHOOK
 
 volumes:
   - name: cache
