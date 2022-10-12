@@ -40,7 +40,7 @@ In production, migrations are run in the `release` phase, over the [Procfile](./
 
 #### WSL2: `Can't verify jwt token`
 
-Probably because wsl messes up eith the time zone when waking up from sleep mode. --> Sync the time zone with windows
+Probably because wsl messes up with the time zone when waking up from sleep mode. --> Sync the time zone with windows
 
 ```bash
 sudo hwclock -s
