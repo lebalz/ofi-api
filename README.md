@@ -36,6 +36,26 @@ Add migration:
 
 In production, migrations are run in the `release` phase, over the [Procfile](./Procfile).
 
+### Troublshooting
+
+#### WSL2: `Can't verify jwt token`
+
+Probably because wsl messes up eith the time zone when waking up from sleep mode. --> Sync the time zone with windows
+
+```bash
+sudo hwclock -s
+```
+
+#### WSL2: `ERRCONNECT` DB Not Running
+
+Start the db service, on WSL:
+
+```bash
+sudo service postgresql start
+sudo service postgresql status
+```
+
+
 ## Docs
 
 ## Deploy (Dokku)
@@ -81,7 +101,7 @@ yarn test
 this will automatically setup the test db.
 
 #### Troubleshooting
-- db was not erased:
+##### db was not erased:
   - recreate the db:
 
 ```bash
