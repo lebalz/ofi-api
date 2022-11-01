@@ -34,6 +34,38 @@ describe('GET /api/user authorized', () => {
         expect(result.body.admin).toEqual(false);
         expect(result.body.groups).toEqual([]);
     });
+    it('adds missing oid', async () => {
+        const userCount = (await query('SELECT * FROM users', [])).rowCount;
+        expect(userCount).toBe(0);
+        const result = await request(app)
+            .get('/api/user')
+            .set('authorization', JSON.stringify({ email: 'foo@bar.ch', oid: '' }));
+        expect(result.statusCode).toEqual(200);
+        expect(result.body.oid).toEqual('');
+        expect(result.body.oid_changed).toBeFalsy();
+        const result2 = await request(app)
+            .get('/api/user')
+            .set('authorization', JSON.stringify({ email: 'foo@bar.ch', oid: 'blablii' }));
+        expect(result2.statusCode).toEqual(200);
+        expect(result2.body.oid).toEqual('blablii');
+        expect(result2.body.oid_changed).toBeFalsy();
+    });
+    it('tracks oid change', async () => {
+        const userCount = (await query('SELECT * FROM users', [])).rowCount;
+        expect(userCount).toBe(0);
+        const result = await request(app)
+            .get('/api/user')
+            .set('authorization', JSON.stringify({ email: 'foo@bar.ch', oid: 'blabluu' }));
+        expect(result.statusCode).toEqual(200);
+        expect(result.body.oid).toEqual('blabluu');
+        expect(result.body.oid_changed).toBeFalsy();
+        const result2 = await request(app)
+            .get('/api/user')
+            .set('authorization', JSON.stringify({ email: 'foo@bar.ch', oid: 'blablii' }));
+        expect(result2.statusCode).toEqual(200);
+        expect(result2.body.oid).toEqual('blabluu');
+        expect(result2.body.oid_changed).toBeTruthy();
+    });
 });
 
 describe('GET /api/user/data', () => {
