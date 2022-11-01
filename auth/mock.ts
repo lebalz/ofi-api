@@ -16,11 +16,11 @@ class MockStrat extends Strategy {
         if (!authorization) {
             return this.error('Unauthorized');
         }
-        const auth = JSON.parse(authorization) as { email: string };
+        const auth = JSON.parse(authorization) as { email: string, oid?: string };
         if (!auth.email) {
             return this.fail('Unauthorized');
         }
-        return this.success({ preferred_username: auth.email }, { preferred_username: auth.email });
+        return this.success({ preferred_username: auth.email, oid: auth.oid || 'adceb229-cb4e-481e-a591-7aa6f94a06c7' }, { preferred_username: auth.email, oid: auth.oid || 'adceb229-cb4e-481e-a591-7aa6f94a06c7' });
     }
 }
 

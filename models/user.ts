@@ -9,6 +9,8 @@ export interface UserProps {
 
 export interface User extends UserProps {
     id: number;
+    oid: string;
+    oid_changed: boolean;
     email: string;
     admin: boolean;
     updated_at: string;
@@ -26,7 +28,7 @@ export const findByMail = (mail: string) => {
     return query<User>('SELECT * FROM users WHERE email = $1', [mail.toLowerCase()]).then(extractUser);
 };
 
-export const getOrCreate = (mail: string) => {
+export const getOrCreate = (mail: string, oid: string = '') => {
     return findByMail(mail).then((user) => {
         if (user) {
             return user;
@@ -36,6 +38,14 @@ export const getOrCreate = (mail: string) => {
         );
     });
 };
+
+export const setOid = (uid: number, oid: string) => {
+    return query('UPDATE users SET oid=$1 WHERE id=$2  RETURNING *', [oid, uid]).then(extractUser);
+}
+
+export const setOidChanged = (uid: number, flag: boolean) => {
+    return query('UPDATE users SET oid_changed=$1 WHERE id=$2  RETURNING *', [flag, uid]).then(extractUser);
+}
 
 export const users = () => {
     return query<User>('SELECT * FROM users', []);
