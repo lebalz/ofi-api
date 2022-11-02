@@ -40,11 +40,11 @@ export const getOrCreate = (mail: string, oid: string = '') => {
 };
 
 export const setOid = (uid: number, oid: string) => {
-    return query('UPDATE users SET oid=$1 WHERE id=$2  RETURNING *', [oid, uid]).then(extractUser);
+    return query('UPDATE users SET oid=$1, updated_at=current_timestamp WHERE id=$2  RETURNING *', [oid, uid]).then(extractUser);
 }
 
 export const setOidChanged = (uid: number, flag: boolean) => {
-    return query('UPDATE users SET oid_changed=$1 WHERE id=$2  RETURNING *', [flag, uid]).then(extractUser);
+    return query('UPDATE users SET oid_changed=$1, updated_at=current_timestamp WHERE id=$2  RETURNING *', [flag, uid]).then(extractUser);
 }
 
 export const users = () => {
