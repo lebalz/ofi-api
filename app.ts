@@ -8,13 +8,19 @@ import TimedExercises from './controllers/timed_exercises';
 import TimeSpans from './controllers/time_spans';
 import SolutionPolicies from './controllers/solution_policies';
 import Admin from './controllers/admin';
-import express from 'express';
+import express, { Request } from 'express';
 import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
 import passport from 'passport';
 import compression from 'compression';
 import { DocumentPayload } from 'models/document';
+import { RequestHandler } from 'express';
+// import {default as gtts} from 'gtts';
+const Gtts = require('gtts');
+
+// import gtts from 'better-node-gtts';
+
 const app = express();
 app.use(compression(), express.json({ limit: '5mb' }));
 
@@ -58,6 +64,16 @@ app.get(
     passport.authenticate('oauth-bearer', { session: false }),
     Admin.find
 );
+
+app.get(
+    '/api/gtts',
+    passport.authenticate('oauth-bearer', { session: false }),
+    (req: Request<{}, {}, {}, { lang?: 'de' | 'en' | 'fr', text: string }>, res) => {
+        res.set({ 'Content-Type': 'audio/mpeg' });
+        const gtts = new Gtts(req.query.text, req.query.lang || 'de');
+        gtts.stream().pipe(res);
+    }
+)
 
 // --- todo here!
 app.get(
