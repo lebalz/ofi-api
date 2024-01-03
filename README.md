@@ -36,6 +36,17 @@ Add migration:
 
 In production, migrations are run in the `release` phase, over the [Procfile](./Procfile).
 
+
+#### Use unauthorized backend (e.g. when developping offline)
+
+When a user already exists, the dev server can be started without azure ad authentication by surpassing the authentication. This comes in handy when developing offline.
+
+```bash
+TEST_USER_EMAIL="user@gbsl.ch" yarn run start
+```
+
+This will use the [mock strategy](src/auth/mock.ts) for authentication. You can add the `TEST_USER_EMAIL` aswell to the .env file and then run `yarn run start`.
+
 ### Troublshooting
 
 #### WSL2: `Can't verify jwt token`
@@ -99,6 +110,8 @@ yarn test
 ```
 
 this will automatically setup the test db.
+
+
 
 #### Troubleshooting
 ##### db was not erased:
