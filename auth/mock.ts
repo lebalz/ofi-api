@@ -15,18 +15,18 @@ class MockStrat extends Strategy {
         options?: any
     ) {
         const authorization = req.headers.authorization;
-        if (!authorization) {
-            if (process.env.TEST_USER_EMAIL) {
-                try {
-                    const user = await query<User>('SELECT * FROM users WHERE email = $1', [process.env.TEST_USER_EMAIL.toLowerCase()]);
-                    if (user.rowCount === 1) {
-                        return this.success({ preferred_username: process.env.TEST_USER_EMAIL, oid: user.rows[0].oid || '' }, { preferred_username: process.env.TEST_USER_EMAIL, oid: user.rows[0].oid || '' });
-                    }
-                } catch (err) {
-                    console.error(err);
-                    /** do nothing... */
+        if (process.env.NODE_ENV !== 'production' && process.env.TEST_USER_EMAIL) {
+            try {
+                const user = await query<User>('SELECT * FROM users WHERE email = $1', [process.env.TEST_USER_EMAIL.toLowerCase()]);
+                if (user.rowCount === 1) {
+                    return this.success({ preferred_username: process.env.TEST_USER_EMAIL, oid: user.rows[0].oid || '' }, { preferred_username: process.env.TEST_USER_EMAIL, oid: user.rows[0].oid || '' });
                 }
+            } catch (err) {
+                console.error(err);
+                /** do nothing... */
             }
+        }
+        if (!authorization) {
             return this.error('Unauthorized');
         }
         const auth = JSON.parse(authorization) as { email: string, oid?: string };
